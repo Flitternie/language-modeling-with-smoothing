@@ -2,8 +2,8 @@
 N-gram language model with popular smoothing methods integrated (i.e. laplace/held-out/cross-validation smoothing,)
 
 ## Features
-- Support n-gram language modeling (n is a tunable parameter, set n to 2 for bigram, 3 for trigram, etc.)
-- Support popular smoothing methods, including Laplace Smoothing, Held-out Smoothing and Croos-validation Smoothing
+- Support n-gram language modeling (n is a tunable parameter, you may set n to 2 for bigram, 3 for trigram, etc.)
+- Support popular smoothing methods, including Laplace Smoothing, Held-out Smoothing and Cross-validation Smoothing
 - Support perplexity computation on a given test corpus 
 - Support sentence generation
 - Support Spearman's rank correlation coefficient computation among different different smoothed LMs
@@ -22,6 +22,5 @@ where `-data` represents the path to the corpus, `n` represents the parameter fo
 3. For next token prediction and Spearman's rank correlation coefficient computation, please refer to the code for details.
 
 ## Remark
-- For detailed description of the smoothing methods used in this project, please refer to 
-\\Manning, Christopher, and Hinrich Schutze. *Foundations of statistical natural language processing.* MIT press, 1999. ([link](https://www.cs.vassar.edu/~cs366/docs/Manning_Schuetze_StatisticalNLP.pdf))
-- This project assumes the corpus can been segmented. Otherwise please conduct text segmentation on your corpus before running this program. For Chinese tokenization, you may consider using [jieba](https://github.com/fxsjy/jieba).
+- For detailed description of the smoothing methods used in this project, please refer to </br>Manning, Christopher, and Hinrich Schutze. *Foundations of statistical natural language processing.* MIT press, 1999. ([link](https://www.cs.vassar.edu/~cs366/docs/Manning_Schuetze_StatisticalNLP.pdf))
+- This project assumes the corpus has been segmented. Otherwise please conduct text segmentation on your corpus before running this program. For Chinese text segmentation, you may consider using [jieba](https://github.com/fxsjy/jieba).
