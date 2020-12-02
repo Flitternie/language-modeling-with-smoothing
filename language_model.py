@@ -5,7 +5,6 @@ from itertools import product
 import math
 import nltk
 from pathlib import Path
-import pandas as pd
 import scipy.stats as stats
 
 from utils import *
@@ -221,7 +220,7 @@ class LanguageModel(object):
             while sent[-1] != "<EOS>":
                 prev = () if self.n == 1 else tuple(sent[-(self.n-1):])
                 blacklist = sent + (["<EOS>"] if len(sent) < min_len else [])
-                print(prev, i, blacklist)
+                # print(prev, i, blacklist)
                 next_token, next_prob = self._best_candidate(prev, i, without=blacklist)
                 sent.append(next_token)
                 prob *= next_prob
@@ -283,7 +282,7 @@ def candidate_dist(sent, n, model):
         print(candidates[:10])
         for rank, cand in enumerate(candidates,1):
             if list(cand)[0] == gold:
-                print("预测概率：", cand, "排序：", rank, "\n")
+                print("Predited Prob:", cand, "Rank:", rank, "\n")
                 return candidates
         print("Not Found")
         return candidates
@@ -291,12 +290,20 @@ def candidate_dist(sent, n, model):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="language_model.py")
+    parser.add_argument('-data', required=True, type=str,
+                        help="path to the corpus")
+    parser.add_argument('-n', required=True, default=2, type=int,
+                        help="n-gram")
+    parser.add_argument('-method', default=None, type=str,
+                        help="smoothing method to be used, 'l' for laplace / 'h' for held-out / 'c' for cross-validation")
+    parser.add_argument('-num', default=0, type=int,
+                        help="number of sentences to be generated")
+    parser.add_argument('-calcorr', action='store_true', default=False,
+                        help="compute Spearman's rank correlation coefficient among different smoothed LMs")
     args = parser.parse_args()
-    args.data = "./corpus/"
-    args.n = 3
-    args.method = None
-    args.num = 5
+
+    assert args.method in ['l', 'h', 'c', None], "Unknown smoothing method!"
 
     '''load and prepare train/test data'''
     data_path = Path(args.data)
@@ -307,33 +314,31 @@ if __name__ == '__main__':
     lm = LanguageModel(train, valid, args.n, method=args.method)
     print("Vocabulary size: {}".format(len(lm.vocab)))
 
-    '''compute different smoothing models'''
-    l_model = lm.lap_smooth()
-    h_model = lm.heldout_smooth()
-    c_model = lm.crossval_smooth()
-    
-    '''compute Spearman's rank correlation coefficient'''
-    sep_ngram, _, _, _ = spearman_corr(l_model, h_model, c_model)
+    if args.calcorr:
+        '''compute different smoothing models'''
+        l_model = lm.lap_smooth()
+        h_model = lm.heldout_smooth()
+        c_model = lm.crossval_smooth()
+        
+        '''compute Spearman's rank correlation coefficient'''
+        sep_ngram, _, _, _ = spearman_corr(l_model, h_model, c_model)
     
     '''case study'''
-    cases_pred = ["芜湖 的 风景 给 他 留下 了 深刻 的 印象", "扶贫 开发 工作 取得 很 大 反响", "我们 将 和 台湾 同胞 携手 合作 ， 共同 谱写 两岸 关系 的 新篇章 "]
-    cases_sent = ["芜湖 的 风景 给 他 留下 了 深刻 的 印象 。", "扶贫 开发 工作 取得 很 大 反响 。", "我们 将 和 台湾 同胞 携手 合作 ， 共同 谱写 两岸 关系 的 新篇章 。"]
-    for case_pred, case_sent in zip(cases_pred, cases_sent):
-        for model in [l_model, h_model, c_model]:
-            print("--- Case Analysis ---")
+    # cases_pred = ["芜湖 的 风景 给 他 留下 了 深刻 的 印象", "扶贫 开发 工作 取得 很 大 反响", "我们 将 和 台湾 同胞 携手 合作 ， 共同 谱写 两岸 关系 的 新篇章 "]
+    # cases_sent = ["芜湖 的 风景 给 他 留下 了 深刻 的 印象 。", "扶贫 开发 工作 取得 很 大 反响 。", "我们 将 和 台湾 同胞 携手 合作 ， 共同 谱写 两岸 关系 的 新篇章 。"]
+    # for case_pred, case_sent in zip(cases_pred, cases_sent):
+    #     for model in [l_model, h_model, c_model]:
+    #         print("--- Case Analysis ---")
             
-            candidate_dist(case_pred, args.n, model)
-            print("--- Case Perplexity ---")
-            print("Model perplexity: {:.3f}\n".format(lm.perplexity([case_sent], model)))
+    #         candidate_dist(case_pred, args.n, model)
+    #         print("--- Case Perplexity ---")
+    #         print("Model perplexity: {:.3f}\n".format(lm.perplexity([case_sent], model)))
     
     '''compute model perplexity'''
-    for model in [l_model, h_model, c_model]:      
-        # compute the language model perplexity over the test corpus
-        perplexity = lm.perplexity(test, model)
-        print("--- Overall Perplexity ---")
-        print("Model perplexity: {:.3f}".format(perplexity))
+    perplexity = lm.perplexity(test)
+    print("--- Overall Perplexity ---")
+    print("Model perplexity: {:.3f}".format(perplexity))
 
-
-#    print("Generating sentences...")
-#    for sentence, prob in lm.generate_sentences(args.num):
-#        print("{} ({:.5f})".format(sentence, prob))
+    print("Generating sentences...")
+    for sentence, prob in lm.generate_sentences(args.num):
+       print("{} ({:.5f})".format(sentence, prob))
