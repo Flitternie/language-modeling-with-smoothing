@@ -19,7 +19,7 @@ pip install requirements.txt
 ```
 python langauge_model.py -data ./corpus/ -n 2 -method l -num 5
 ```
-where `-data` represents the path to the corpus, `n` represents the parameter for tuning n-gram, `-method` represents the smoothing method to be used (`l` for laplace smoothing, `h` for held-out smoothing, `c` for cross-validation smoothing), `-num` represents the number of sentences to be generated.
+where `-data` represents the path to the corpus, `-n` represents the parameter for tuning n-gram, `-method` represents the smoothing method to be used (`l` for laplace smoothing, `h` for held-out smoothing, `c` for cross-validation smoothing), `-num` represents the number of sentences to be generated.
 3. For next token prediction and Spearman's rank correlation coefficient computation, please refer to the code for details.
 
 ## Remarks
